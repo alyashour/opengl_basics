@@ -1,12 +1,11 @@
 #include <iostream>
 
-#include <GLAD/glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 const char* vertex_shader_source =  "#version 330 core\n"
-    "layout (position = 0) in vec3 aPos;\n"
+    "layout (location = 0) in vec3 aPos;\n"
     "void main() {\n"
-    "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
 
@@ -19,11 +18,6 @@ const char* frag_shader_source = ""
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
-}
-
-void render() {
-    glClearColor(0.3f, 0.2f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void process_input(GLFWwindow* window) {
@@ -116,16 +110,31 @@ int main() {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO); // bind the VAO
 
-    // pass the vertices to the gpu
+    // vertex data
     float vertices[] = {
-        0.5f, 0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f
+        -0.5f, 0.5f, 0.0f, // top left
+        0.5f, 0.5f, 0.0f, // top right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        0.5f, -0.5f, 0.0f // bottom right
     };
+
+    // create a vertex buffer object
     unsigned int VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // index data
+    unsigned int indices[] = {
+        0, 1, 2, // first triangle
+        2, 1, 3 // second triangle
+    };
+
+    // create an element buffer object (EBO)
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // tell opengl how to interpret the vertex data
     glVertexAttribPointer(
@@ -136,15 +145,24 @@ int main() {
         3 * sizeof(float), // the stride of the data
         static_cast<void *>(nullptr) // pointer to where the data starts. we're at the beginning of the buffer so 0
     );
+    glEnableVertexAttribArray(0); // unbind vertex attribute array
+
+    // set shader
+    glUseProgram(shaderProgram);
 
     // render loop
     while (!glfwWindowShouldClose(window)) {
         // input
         process_input(window);
 
-        // render commands
-        render();
+        glClearColor(0.3f, 0.2f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
+        // render commands
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0); // unbind
+        
         // swap buffers and poll events for next frame
         glfwSwapBuffers(window);
         glfwPollEvents();
