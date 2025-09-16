@@ -16,6 +16,15 @@ include_directories(opengl_basics include)
 add_executable(opengl_basics
         src/main.cpp
         src/glad.c
+        src/shader.h
+)
+
+# Copy shaders directory to the build directory after building
+add_custom_command(
+        TARGET opengl_basics POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/shaders
+        ${CMAKE_CURRENT_BINARY_DIR}/shaders
 )
 
 target_link_libraries(opengl_basics
