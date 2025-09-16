@@ -1,20 +1,28 @@
+#include <cmath>
 #include <iostream>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-const char* vertex_shader_source =  "#version 330 core\n"
+auto vertex_shader_source =  "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "void main() {\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "   gl_Position = vec4(aPos, 1.0);\n" // put every vertex exactly where it should be with an alpha of 1
     "}\0";
 
-const char* frag_shader_source = ""
+auto frag_shader_source = ""
     "#version 330 core\n"
     "out vec4 FragColor;\n"
+    "uniform vec4 ourColor;\n"
     "void main() {\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "   FragColor = ourColor;\n" // set every fragment to orange
     "}\0";
+
+float calculate_green_value() {
+    const float timeValue = glfwGetTime();
+    const float green_value = (sin(timeValue) / 2.0f) + 0.5f;
+    return green_value;
+}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -61,7 +69,6 @@ int main() {
     // set the callback
     glfwSetWindowSizeCallback(window, framebuffer_size_callback);
 
-
     // load and compile the vertex shader
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertex_shader_source, nullptr);
@@ -77,7 +84,7 @@ int main() {
     }
 
     // load and compile the fragment shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    const unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &frag_shader_source, nullptr);
     glCompileShader(fragmentShader);
     // check for success
@@ -89,7 +96,7 @@ int main() {
     }
 
     // create shader program
-    unsigned int shaderProgram = glCreateProgram();
+    const unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
@@ -150,13 +157,21 @@ int main() {
     // set shader
     glUseProgram(shaderProgram);
 
+    // get the position of the uniform vertex color
+    int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+
     // render loop
     while (!glfwWindowShouldClose(window)) {
         // input
         process_input(window);
 
+        // clear the screen
         glClearColor(0.3f, 0.2f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // update the color variable
+        const float greenValue = calculate_green_value();
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
         // render commands
         glBindVertexArray(VAO);
