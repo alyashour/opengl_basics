@@ -106,9 +106,7 @@ int main() {
 
     // set shader
     shader.use();
-
-    // get the position of the uniform vertex color
-    // int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+    shader.setFloat("horizOffset", 0.2f);
 
     // render loop
     while (!glfwWindowShouldClose(window)) {

@@ -19,13 +19,16 @@ add_executable(opengl_basics
         src/shader.h
 )
 
-# Copy shaders directory to the build directory after building
-add_custom_command(
-        TARGET opengl_basics POST_BUILD
+# Make a custom target to copy over the shaders dir to the build dir
+add_custom_target(copy_shaders ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/shaders
         ${CMAKE_CURRENT_BINARY_DIR}/shaders
+        COMMENT "Copying shaders to build directory"
 )
+
+# Make your app depend on shaders being copied
+add_dependencies(opengl_basics copy_shaders)
 
 target_link_libraries(opengl_basics
         glfw
